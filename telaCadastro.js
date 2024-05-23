@@ -4,21 +4,29 @@ function cadastrarUsuario() {
   const password = document.getElementById("password").value;
   const confirmPassword = document.getElementById("confirmPassword").value;
 
-  // Verificar se as senhas coincidem
   if (password !== confirmPassword) {
     alert("As senhas não coincidem. Por favor, tente novamente.");
     return;
   }
 
-  // Verificar se o email contém o caractere "@"
   if (!email.includes("@")) {
     alert("Por favor, digite um email válido.");
     return;
   }
 
-  // Simular cadastro (aqui você poderia enviar os dados para um servidor)
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const userExists = users.some((user) => user.email === email);
+
+  if (userExists) {
+    alert("Usuário já cadastrado com esse email.");
+    return;
+  }
+
+  users.push({ nome, email, password });
+  localStorage.setItem("users", JSON.stringify(users));
+
   alert(`Usuário ${nome} cadastrado com sucesso!`);
 
-  // Redirecionar para a página de login após cadastro bem-sucedido
   window.location.href = "./index.html";
 }
