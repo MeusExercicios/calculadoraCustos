@@ -68,22 +68,19 @@ function adicionarIngrediente(nomeProduto, pesoVolumeProduto, unidadeProduto) {
     const nomeIngrediente = prompt("Qual o nome do ingrediente?");
     if (!nomeIngrediente) return;
 
-    const unidadeCompra = prompt(
-      "Qual a unidade de medida da compra? (kg, g, l, ml, unidade)"
-    ).toLowerCase();
-    if (!["kg", "g", "l", "ml", "unidade"].includes(unidadeCompra)) {
-      alert("Unidade inválida. Tente novamente.");
+    const unidadeCompra = "unidade";
+    const quantidadeCompra = parseFloat(
+      prompt(`Quantas unidades de ${nomeIngrediente} você comprou?`)
+    );
+    if (isNaN(quantidadeCompra)) {
+      alert("Valor inválido. Tente novamente.");
       return;
     }
 
-    const pesoVolumeTotal = parseFloat(
-      prompt(
-        `Qual o ${
-          unidadeCompra === "kg" || unidadeCompra === "g" ? "peso" : "volume"
-        } total do ingrediente comprado (${unidadeCompra})?`
-      )
+    const quantidadeUsada = parseFloat(
+      prompt(`Quantas unidades de ${nomeIngrediente} você usou?`)
     );
-    if (isNaN(pesoVolumeTotal)) {
+    if (isNaN(quantidadeUsada)) {
       alert("Valor inválido. Tente novamente.");
       return;
     }
@@ -96,29 +93,12 @@ function adicionarIngrediente(nomeProduto, pesoVolumeProduto, unidadeProduto) {
       return;
     }
 
-    const quantidadeUsada = parseFloat(
-      prompt("Quanto do ingrediente foi usado?")
-    );
-    if (isNaN(quantidadeUsada)) {
-      alert("Valor inválido. Tente novamente.");
-      return;
-    }
-
-    const unidadeUsada = prompt(
-      "Qual a unidade de medida usada? (kg, g, l, ml, unidade)"
-    ).toLowerCase();
-    if (!["kg", "g", "l", "ml", "unidade"].includes(unidadeUsada)) {
-      alert("Unidade inválida. Tente novamente.");
-      return;
-    }
-
     ingredientes.push({
       nome: nomeIngrediente,
       unidadeCompra: unidadeCompra,
-      pesoVolumeTotal: pesoVolumeTotal,
+      quantidadeCompra: quantidadeCompra,
       preco: precoIngrediente,
       quantidadeUsada: quantidadeUsada,
-      unidadeUsada: unidadeUsada,
     });
 
     const continuar = confirm("Deseja adicionar outro ingrediente?");
@@ -146,23 +126,9 @@ function finalizarCadastro(
   let custoTotal = 0;
 
   ingredientes.forEach((ingrediente) => {
-    const pesoVolumeCompra = ingrediente.pesoVolumeTotal; // Peso ou volume total do ingrediente comprado
-    let fatorConversaoCompra = 1;
-    if (
-      ingrediente.unidadeCompra === "kg" ||
-      ingrediente.unidadeCompra === "l"
-    ) {
-      fatorConversaoCompra = 1000; // Converter para gramas ou mililitros
-    }
-
-    let fatorConversaoUsada = 1;
-    if (ingrediente.unidadeUsada === "kg" || ingrediente.unidadeUsada === "l") {
-      fatorConversaoUsada = 1000; // Converter para gramas ou mililitros
-    }
-
     const custoIngrediente =
-      (ingrediente.preco / (pesoVolumeCompra * fatorConversaoCompra)) *
-      (ingrediente.quantidadeUsada * fatorConversaoUsada);
+      (ingrediente.preco / ingrediente.quantidadeCompra) *
+      ingrediente.quantidadeUsada;
     custoTotal += custoIngrediente;
   });
 
@@ -212,9 +178,7 @@ function consultarProdutos() {
         2
       )} (${
         ingrediente.unidadeCompra
-      }) - Usado: ${ingrediente.quantidadeUsada.toFixed(2)} ${
-        ingrediente.unidadeUsada
-      }`;
+      }) - Usado: ${ingrediente.quantidadeUsada.toFixed(2)}`;
       listaIngredientes.appendChild(item);
     });
     produtoDiv.appendChild(listaIngredientes);
