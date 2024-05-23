@@ -59,50 +59,71 @@ function adicionarCampos() {
 }
 
 function adicionarIngrediente(nomeProduto, pesoVolumeProduto, unidadeProduto) {
+  const pai = document.getElementById("cadastrar");
+  pai.innerHTML = ""; // Limpar conteúdo anterior, se houver
+
   const ingredientes = [];
 
-  // Função para adicionar ingredientes
-  function adicionarIngredientePrompt() {
-    const nomeIngrediente = prompt("Qual é o nome do ingrediente?");
-    if (nomeIngrediente) {
-      const unidadeCompra = prompt(
-        `Qual é a unidade de compra de ${nomeIngrediente}? (kg, g, ml, l, unidade)`
-      );
-      const pesoVolumeIngrediente = parseFloat(
-        prompt(
-          `Qual é o peso/volume total de ${nomeIngrediente} que você comprou?`
-        )
-      );
-      const precoIngrediente = parseFloat(
-        prompt(`Quanto você pagou pelo ${nomeIngrediente}?`)
-      );
-      const quantidadeUsada = parseFloat(
-        prompt(`Quanto de ${nomeIngrediente} você usou?`)
-      );
-      const unidadeUsada = prompt(
-        `Qual é a unidade de medida de ${nomeIngrediente} que você usou? (kg, g, ml, l, unidade)`
-      );
+  function perguntarIngrediente() {
+    const nomeIngrediente = prompt("Qual o nome do ingrediente?");
+    if (!nomeIngrediente) return;
 
-      ingredientes.push({
-        nome: nomeIngrediente,
-        unidadeCompra: unidadeCompra,
-        pesoVolumeTotal: pesoVolumeIngrediente,
-        preco: precoIngrediente,
-        quantidadeUsada: quantidadeUsada,
-        unidadeUsada: unidadeUsada,
-      });
+    const unidadeCompra = prompt(
+      "Qual a unidade de medida da compra? (kg, g, l, ml, unidade)"
+    ).toLowerCase();
+    if (!["kg", "g", "l", "ml", "unidade"].includes(unidadeCompra)) {
+      alert("Unidade inválida. Tente novamente.");
+      return;
+    }
 
-      const adicionarOutro = confirm("Deseja adicionar outro ingrediente?");
-      if (adicionarOutro) {
-        adicionarIngredientePrompt();
-      } else {
-        finalizarCadastro(
-          nomeProduto,
-          pesoVolumeProduto,
-          unidadeProduto,
-          ingredientes
-        );
-      }
+    const pesoVolumeTotal = parseFloat(
+      prompt(
+        `Qual o ${
+          unidadeCompra === "kg" || unidadeCompra === "g" ? "peso" : "volume"
+        } total do ingrediente comprado (${unidadeCompra})?`
+      )
+    );
+    if (isNaN(pesoVolumeTotal)) {
+      alert("Valor inválido. Tente novamente.");
+      return;
+    }
+
+    const precoIngrediente = parseFloat(
+      prompt("Qual o preço total do ingrediente comprado?")
+    );
+    if (isNaN(precoIngrediente)) {
+      alert("Valor inválido. Tente novamente.");
+      return;
+    }
+
+    const quantidadeUsada = parseFloat(
+      prompt("Quanto do ingrediente foi usado?")
+    );
+    if (isNaN(quantidadeUsada)) {
+      alert("Valor inválido. Tente novamente.");
+      return;
+    }
+
+    const unidadeUsada = prompt(
+      "Qual a unidade de medida usada? (kg, g, l, ml, unidade)"
+    ).toLowerCase();
+    if (!["kg", "g", "l", "ml", "unidade"].includes(unidadeUsada)) {
+      alert("Unidade inválida. Tente novamente.");
+      return;
+    }
+
+    ingredientes.push({
+      nome: nomeIngrediente,
+      unidadeCompra: unidadeCompra,
+      pesoVolumeTotal: pesoVolumeTotal,
+      preco: precoIngrediente,
+      quantidadeUsada: quantidadeUsada,
+      unidadeUsada: unidadeUsada,
+    });
+
+    const continuar = confirm("Deseja adicionar outro ingrediente?");
+    if (continuar) {
+      perguntarIngrediente();
     } else {
       finalizarCadastro(
         nomeProduto,
@@ -113,7 +134,7 @@ function adicionarIngrediente(nomeProduto, pesoVolumeProduto, unidadeProduto) {
     }
   }
 
-  adicionarIngredientePrompt();
+  perguntarIngrediente();
 }
 
 function finalizarCadastro(
@@ -187,12 +208,13 @@ function consultarProdutos() {
     const listaIngredientes = document.createElement("ul");
     produto.ingredientes.forEach((ingrediente) => {
       const item = document.createElement("li");
-      item.innerText = `${ingrediente.nome} - ${ingrediente.quantidadeUsada} ${
+      item.innerText = `${ingrediente.nome} - R$ ${ingrediente.preco.toFixed(
+        2
+      )} (${
+        ingrediente.unidadeCompra
+      }) - Usado: ${ingrediente.quantidadeUsada.toFixed(2)} ${
         ingrediente.unidadeUsada
-      } (Custo: R$ ${(
-        (ingrediente.preco / ingrediente.pesoVolumeTotal) *
-        ingrediente.quantidadeUsada
-      ).toFixed(2)})`;
+      }`;
       listaIngredientes.appendChild(item);
     });
     produtoDiv.appendChild(listaIngredientes);
