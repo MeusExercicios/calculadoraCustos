@@ -217,6 +217,7 @@ function finalizarCadastro(
     unidade: unidadeProduto,
     custoTotal: custoTotal,
     ingredientes: ingredientes,
+    status: "não vendido",
   });
   localStorage.setItem("produtos", JSON.stringify(produtos));
 }
@@ -234,12 +235,12 @@ function consultarProdutos() {
     return;
   }
 
-  produtos.forEach((produto) => {
+  produtos.forEach((produto, index) => {
     const produtoDiv = document.createElement("div");
     produtoDiv.classList.add("produto");
 
     const titulo = document.createElement("h3");
-    titulo.innerText = `${produto.nome} (${produto.pesoVolume} ${produto.unidade})`;
+    titulo.innerText = `${produto.nome} (${produto.pesoVolume} ${produto.unidade}) - Status: ${produto.status}`;
     produtoDiv.appendChild(titulo);
 
     const listaIngredientes = document.createElement("ul");
@@ -260,6 +261,81 @@ function consultarProdutos() {
     custoTotal.innerText = `Custo Total: R$ ${produto.custoTotal.toFixed(2)}`;
     produtoDiv.appendChild(custoTotal);
 
+    const botaoVenda = document.createElement("button");
+    botaoVenda.innerText = "Submeter a Venda";
+    botaoVenda.addEventListener("click", () => submeterVenda(index));
+    produtoDiv.appendChild(botaoVenda);
+
     pai.appendChild(produtoDiv);
   });
+}
+
+function submeterVenda(index) {
+  const produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+  const produto = produtos[index];
+
+  const opcaoVenda = prompt(
+    "Como deseja vender? (inteiro/porção)"
+  ).toLowerCase();
+
+  if (opcaoVenda === "inteiro") {
+    const lucro = parseFloat(prompt("Quantos por cento deseja lucrar?"));
+    if (isNaN(lucro)) {
+      alert("Valor inválido. Tente novamente.");
+      return;
+    }
+    const precoVenda = produto.custoTotal * (1 + lucro / 100);
+    produto.status = `vendendo por R$ ${precoVenda.toFixed(2)}`;
+  } else if (opcaoVenda === "porção") {
+    const unidadePorcao = prompt(
+      `Qual a unidade da porção? (ex: ${produto.unidade})`
+    ).toLowerCase();
+    if (!["kg", "g", "l", "ml", "unidade"].includes(unidadePorcao)) {
+      alert("Unidade de porção inválida. Tente novamente.");
+      return;
+    }
+
+    const quantidadePorcao = parseFloat(
+      prompt(`Qual a quantidade da porção em ${unidadePorcao}?`)
+    );
+    if (isNaN(quantidadePorcao)) {
+      alert("Quantidade inválida. Tente novamente.");
+      return;
+    }
+
+    let custoPorcao;
+    if (produto.unidade === unidadePorcao) {
+      custoPorcao =
+        (produto.custoTotal / produto.pesoVolume) * quantidadePorcao;
+    } else {
+      if (produto.unidade === "kg" && unidadePorcao === "g") {
+        custoPorcao =
+          (produto.custoTotal / produto.pesoVolume) * (quantidadePorcao / 1000);
+      } else if (produto.unidade === "g" && unidadePorcao === "kg") {
+        custoPorcao =
+          (produto.custoTotal / produto.pesoVolume) * (quantidadePorcao * 1000);
+      } else if (produto.unidade === "l" && unidadePorcao === "ml") {
+        custoPorcao =
+          (produto.custoTotal / produto.pesoVolume) * (quantidadePorcao / 1000);
+      } else if (produto.unidade === "ml" && unidadePorcao === "l") {
+        custoPorcao =
+          (produto.custoTotal / produto.pesoVolume) * (quantidadePorcao * 1000);
+      }
+    }
+
+    const lucro = parseFloat(prompt("Quantos por cento deseja lucrar?"));
+    if (isNaN(lucro)) {
+      alert("Valor inválido. Tente novamente.");
+      return;
+    }
+    const precoVenda = custoPorcao * (1 + lucro / 100);
+    produto.status = `vendendo por R$ ${precoVenda.toFixed(2)} a porção`;
+  } else {
+    alert("Opção de venda inválida. Tente novamente.");
+    return;
+  }
+
+  produtos[index] = produto;
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+  consultarProdutos();
 }
