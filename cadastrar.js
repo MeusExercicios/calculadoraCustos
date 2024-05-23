@@ -266,6 +266,11 @@ function consultarProdutos() {
     botaoVenda.addEventListener("click", () => submeterVenda(index));
     produtoDiv.appendChild(botaoVenda);
 
+    const botaoRemover = document.createElement("button");
+    botaoRemover.innerText = "Remover";
+    botaoRemover.addEventListener("click", () => removerProduto(index));
+    produtoDiv.appendChild(botaoRemover);
+
     pai.appendChild(produtoDiv);
   });
 }
@@ -336,6 +341,13 @@ function submeterVenda(index) {
   }
 
   produtos[index] = produto;
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+  consultarProdutos();
+}
+
+function removerProduto(index) {
+  let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+  produtos.splice(index, 1);
   localStorage.setItem("produtos", JSON.stringify(produtos));
   consultarProdutos();
 }
