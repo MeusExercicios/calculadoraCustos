@@ -68,27 +68,63 @@ function adicionarIngrediente(nomeProduto, pesoVolumeProduto, unidadeProduto) {
     const nomeIngrediente = prompt("Qual o nome do ingrediente?");
     if (!nomeIngrediente) return;
 
-    const unidadeCompra = "unidade";
-    const quantidadeCompra = parseFloat(
-      prompt(`Quantas unidades de ${nomeIngrediente} você comprou?`)
+    let unidadeCompra = prompt(
+      "Qual a unidade de compra desse ingrediente? (kg, g, l, ml, unidade)"
+    ).toLowerCase();
+    if (!["kg", "g", "l", "ml", "unidade"].includes(unidadeCompra)) {
+      alert("Unidade de compra inválida. Tente novamente.");
+      return;
+    }
+
+    let quantidadeCompra = parseFloat(
+      prompt(`Quantos ${unidadeCompra} de ${nomeIngrediente} você comprou?`)
     );
     if (isNaN(quantidadeCompra)) {
       alert("Valor inválido. Tente novamente.");
       return;
     }
 
-    const quantidadeUsada = parseFloat(
-      prompt(`Quantas unidades de ${nomeIngrediente} você usou?`)
+    const precoIngrediente = parseFloat(
+      prompt(
+        `Qual o preço total pago por ${quantidadeCompra} ${unidadeCompra} de ${nomeIngrediente}?`
+      )
     );
-    if (isNaN(quantidadeUsada)) {
+    if (isNaN(precoIngrediente)) {
       alert("Valor inválido. Tente novamente.");
       return;
     }
 
-    const precoIngrediente = parseFloat(
-      prompt("Qual o preço total do ingrediente comprado?")
+    let unidadesPossiveis;
+    switch (unidadeCompra) {
+      case "kg":
+      case "g":
+        unidadesPossiveis = ["kg", "g"];
+        break;
+      case "l":
+      case "ml":
+        unidadesPossiveis = ["l", "ml"];
+        break;
+      case "unidade":
+        unidadesPossiveis = ["unidade"];
+        break;
+    }
+
+    const unidadeUso = prompt(
+      `Qual a unidade de uso desse ingrediente? (${unidadesPossiveis.join(
+        ", "
+      )})`
+    ).toLowerCase();
+
+    if (!unidadesPossiveis.includes(unidadeUso)) {
+      alert("Unidade de uso inválida. Tente novamente.");
+      return;
+    }
+
+    let quantidadeUsada = parseFloat(
+      prompt(`Quantos ${unidadeUso} de ${nomeIngrediente} você usou?`)
     );
-    if (isNaN(precoIngrediente)) {
+
+    if (isNaN(quantidadeUsada)) {
       alert("Valor inválido. Tente novamente.");
       return;
     }
@@ -98,6 +134,7 @@ function adicionarIngrediente(nomeProduto, pesoVolumeProduto, unidadeProduto) {
       unidadeCompra: unidadeCompra,
       quantidadeCompra: quantidadeCompra,
       preco: precoIngrediente,
+      unidadeUso: unidadeUso,
       quantidadeUsada: quantidadeUsada,
     });
 
@@ -126,9 +163,43 @@ function finalizarCadastro(
   let custoTotal = 0;
 
   ingredientes.forEach((ingrediente) => {
-    const custoIngrediente =
-      (ingrediente.preco / ingrediente.quantidadeCompra) *
-      ingrediente.quantidadeUsada;
+    let custoIngrediente;
+    if (ingrediente.unidadeCompra === ingrediente.unidadeUso) {
+      custoIngrediente =
+        (ingrediente.preco / ingrediente.quantidadeCompra) *
+        ingrediente.quantidadeUsada;
+    } else {
+      // Converter unidade de uso para unidade de compra
+      if (
+        ingrediente.unidadeCompra === "kg" &&
+        ingrediente.unidadeUso === "g"
+      ) {
+        custoIngrediente =
+          (ingrediente.preco / ingrediente.quantidadeCompra) *
+          (ingrediente.quantidadeUsada / 1000);
+      } else if (
+        ingrediente.unidadeCompra === "g" &&
+        ingrediente.unidadeUso === "kg"
+      ) {
+        custoIngrediente =
+          (ingrediente.preco / ingrediente.quantidadeCompra) *
+          (ingrediente.quantidadeUsada * 1000);
+      } else if (
+        ingrediente.unidadeCompra === "l" &&
+        ingrediente.unidadeUso === "ml"
+      ) {
+        custoIngrediente =
+          (ingrediente.preco / ingrediente.quantidadeCompra) *
+          (ingrediente.quantidadeUsada / 1000);
+      } else if (
+        ingrediente.unidadeCompra === "ml" &&
+        ingrediente.unidadeUso === "l"
+      ) {
+        custoIngrediente =
+          (ingrediente.preco / ingrediente.quantidadeCompra) *
+          (ingrediente.quantidadeUsada * 1000);
+      }
+    }
     custoTotal += custoIngrediente;
   });
 
@@ -158,7 +229,7 @@ function consultarProdutos() {
 
   if (produtos.length === 0) {
     const mensagem = document.createElement("p");
-    mensagem.innerText = "Nenhum produto cadastrado.";
+    mensagem.innerText = "Não tem nenhum produto cadastrado ainda.";
     pai.appendChild(mensagem);
     return;
   }
@@ -178,7 +249,9 @@ function consultarProdutos() {
         2
       )} (${
         ingrediente.unidadeCompra
-      }) - Usado: ${ingrediente.quantidadeUsada.toFixed(2)}`;
+      }) - Usado: ${ingrediente.quantidadeUsada.toFixed(2)} ${
+        ingrediente.unidadeUso
+      }`;
       listaIngredientes.appendChild(item);
     });
     produtoDiv.appendChild(listaIngredientes);
