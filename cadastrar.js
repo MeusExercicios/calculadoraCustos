@@ -64,91 +64,138 @@ function adicionarIngrediente(nomeProduto, pesoVolumeProduto, unidadeProduto) {
 
   const ingredientes = [];
 
-  function perguntarIngrediente() {
-    const nomeIngrediente = prompt("Qual o nome do ingrediente?");
-    if (!nomeIngrediente) return;
+  function criarCampoEntrada(labelText, inputType, inputPlaceholder, parent) {
+    const label = document.createElement("label");
+    label.innerText = labelText;
+    const input = document.createElement("input");
+    input.type = inputType;
+    input.placeholder = inputPlaceholder;
+    parent.appendChild(label);
+    parent.appendChild(input);
+    return input;
+  }
 
-    let unidadeCompra = prompt(
-      "Qual a unidade de compra desse ingrediente? (kg, g, l, ml, unidade)"
-    ).toLowerCase();
-    if (!["kg", "g", "l", "ml", "unidade"].includes(unidadeCompra)) {
-      alert("Unidade de compra inválida. Tente novamente.");
-      return;
-    }
-
-    let quantidadeCompra = parseFloat(
-      prompt(`Quantos ${unidadeCompra} de ${nomeIngrediente} você comprou?`)
-    );
-    if (isNaN(quantidadeCompra)) {
-      alert("Valor inválido. Tente novamente.");
-      return;
-    }
-
-    const precoIngrediente = parseFloat(
-      prompt(
-        `Qual o preço total pago por ${quantidadeCompra} ${unidadeCompra} de ${nomeIngrediente}?`
-      )
-    );
-    if (isNaN(precoIngrediente)) {
-      alert("Valor inválido. Tente novamente.");
-      return;
-    }
-
-    let unidadesPossiveis;
-    switch (unidadeCompra) {
-      case "kg":
-      case "g":
-        unidadesPossiveis = ["kg", "g"];
-        break;
-      case "l":
-      case "ml":
-        unidadesPossiveis = ["l", "ml"];
-        break;
-      case "unidade":
-        unidadesPossiveis = ["unidade"];
-        break;
-    }
-
-    const unidadeUso = prompt(
-      `Qual a unidade de uso desse ingrediente? (${unidadesPossiveis.join(
-        ", "
-      )})`
-    ).toLowerCase();
-
-    if (!unidadesPossiveis.includes(unidadeUso)) {
-      alert("Unidade de uso inválida. Tente novamente.");
-      return;
-    }
-
-    let quantidadeUsada = parseFloat(
-      prompt(`Quantos ${unidadeUso} de ${nomeIngrediente} você usou?`)
-    );
-
-    if (isNaN(quantidadeUsada)) {
-      alert("Valor inválido. Tente novamente.");
-      return;
-    }
-
-    ingredientes.push({
-      nome: nomeIngrediente,
-      unidadeCompra: unidadeCompra,
-      quantidadeCompra: quantidadeCompra,
-      preco: precoIngrediente,
-      unidadeUso: unidadeUso,
-      quantidadeUsada: quantidadeUsada,
+  function criarDropdown(labelText, options, parent) {
+    const label = document.createElement("label");
+    label.innerText = labelText;
+    const select = document.createElement("select");
+    options.forEach((optionText) => {
+      const option = document.createElement("option");
+      option.value = optionText;
+      option.text = optionText;
+      select.appendChild(option);
     });
+    parent.appendChild(label);
+    parent.appendChild(select);
+    return select;
+  }
 
-    const continuar = confirm("Deseja adicionar outro ingrediente?");
-    if (continuar) {
-      perguntarIngrediente();
-    } else {
+  function criarBotao(labelText, parent, callback) {
+    const button = document.createElement("button");
+    button.innerText = labelText;
+    button.addEventListener("click", callback);
+    parent.appendChild(button);
+    return button;
+  }
+
+  function perguntarIngrediente() {
+    pai.innerHTML = "";
+
+    const nomeIngrediente = criarCampoEntrada(
+      "Nome do Ingrediente:",
+      "text",
+      "Nome do Ingrediente",
+      pai
+    );
+
+    const unidadesPossiveisCompra = ["kg", "g", "l", "ml", "unidade"];
+    const unidadeCompra = criarDropdown(
+      "Unidade de Compra:",
+      unidadesPossiveisCompra,
+      pai
+    );
+
+    const quantidadeCompra = criarCampoEntrada(
+      "Quantidade Comprada:",
+      "number",
+      "Quantidade Comprada",
+      pai
+    );
+
+    const precoIngrediente = criarCampoEntrada(
+      "Preço Total:",
+      "number",
+      "Preço Total",
+      pai
+    );
+
+    const unidadeUso = criarDropdown(
+      "Unidade de Uso:",
+      unidadesPossiveisCompra,
+      pai
+    );
+
+    const quantidadeUsada = criarCampoEntrada(
+      "Quantidade Usada:",
+      "number",
+      "Quantidade Usada",
+      pai
+    );
+
+    const botaoAdicionar = criarBotao(
+      "Adicionar Ingrediente",
+      pai,
+      function () {
+        if (
+          nomeIngrediente.value &&
+          unidadeCompra.value &&
+          quantidadeCompra.value &&
+          precoIngrediente.value &&
+          unidadeUso.value &&
+          quantidadeUsada.value
+        ) {
+          ingredientes.push({
+            nome: nomeIngrediente.value,
+            unidadeCompra: unidadeCompra.value,
+            quantidadeCompra: parseFloat(quantidadeCompra.value),
+            preco: parseFloat(precoIngrediente.value),
+            unidadeUso: unidadeUso.value,
+            quantidadeUsada: parseFloat(quantidadeUsada.value),
+          });
+          perguntarAdicionarMaisIngredientes();
+        } else {
+          alert("Por favor, preencha todos os campos.");
+        }
+      }
+    );
+
+    const botaoCancelar = criarBotao("Cancelar", pai, function () {
       finalizarCadastro(
         nomeProduto,
         pesoVolumeProduto,
         unidadeProduto,
         ingredientes
       );
-    }
+    });
+  }
+
+  function perguntarAdicionarMaisIngredientes() {
+    pai.innerHTML = "";
+
+    const pergunta = document.createElement("p");
+    pergunta.innerText = "Deseja adicionar outro ingrediente?";
+    pai.appendChild(pergunta);
+
+    const botaoSim = criarBotao("Sim", pai, perguntarIngrediente);
+
+    const botaoNao = criarBotao("Não", pai, function () {
+      finalizarCadastro(
+        nomeProduto,
+        pesoVolumeProduto,
+        unidadeProduto,
+        ingredientes
+      );
+    });
   }
 
   perguntarIngrediente();
@@ -160,6 +207,9 @@ function finalizarCadastro(
   unidadeProduto,
   ingredientes
 ) {
+  const pai = document.getElementById("cadastrar");
+  pai.innerHTML = ""; // Limpar conteúdo anterior, se houver
+
   let custoTotal = 0;
 
   ingredientes.forEach((ingrediente) => {
@@ -203,11 +253,11 @@ function finalizarCadastro(
     custoTotal += custoIngrediente;
   });
 
-  alert(
-    `O custo total do produto ${nomeProduto} (${pesoVolumeProduto} ${unidadeProduto}) é R$ ${custoTotal.toFixed(
-      2
-    )}`
-  );
+  const resultado = document.createElement("div");
+  resultado.innerText = `O custo total do produto ${nomeProduto} (${pesoVolumeProduto} ${unidadeProduto}) é R$ ${custoTotal.toFixed(
+    2
+  )}`;
+  pai.appendChild(resultado);
 
   // Salvar o produto no localStorage
   let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
@@ -220,6 +270,13 @@ function finalizarCadastro(
     status: "não vendido",
   });
   localStorage.setItem("produtos", JSON.stringify(produtos));
+
+  const botaoOk = document.createElement("button");
+  botaoOk.innerText = "OK";
+  botaoOk.addEventListener("click", function () {
+    pai.innerHTML = "";
+  });
+  pai.appendChild(botaoOk);
 }
 
 function consultarProdutos() {
@@ -240,7 +297,7 @@ function consultarProdutos() {
     produtoDiv.classList.add("produto");
 
     const titulo = document.createElement("h3");
-    titulo.innerText = `${produto.nome} (${produto.pesoVolume} ${produto.unidade}) - Status: ${produto.status}`;
+    titulo.innerText = `${produto.nome} (${produto.pesoVolume} ${produto.unidade}) - ${produto.status}`;
     produtoDiv.appendChild(titulo);
 
     const listaIngredientes = document.createElement("ul");
@@ -276,73 +333,130 @@ function consultarProdutos() {
 }
 
 function submeterVenda(index) {
+  const pai = document.getElementById("cadastrar");
   const produtos = JSON.parse(localStorage.getItem("produtos")) || [];
   const produto = produtos[index];
 
-  const opcaoVenda = prompt(
-    "Como deseja vender? (inteiro/porção)"
-  ).toLowerCase();
+  pai.innerHTML = ""; // Limpar conteúdo anterior, se houver
 
-  if (opcaoVenda === "inteiro") {
-    const lucro = parseFloat(prompt("Quantos por cento deseja lucrar?"));
-    if (isNaN(lucro)) {
-      alert("Valor inválido. Tente novamente.");
-      return;
-    }
-    const precoVenda = produto.custoTotal * (1 + lucro / 100);
-    produto.status = `vendendo por R$ ${precoVenda.toFixed(2)}`;
-  } else if (opcaoVenda === "porção") {
-    const unidadePorcao = prompt(
-      `Qual a unidade da porção? (ex: ${produto.unidade})`
-    ).toLowerCase();
-    if (!["kg", "g", "l", "ml", "unidade"].includes(unidadePorcao)) {
-      alert("Unidade de porção inválida. Tente novamente.");
-      return;
-    }
+  const opcaoVendaLabel = document.createElement("label");
+  opcaoVendaLabel.innerText = "Como deseja vender? (inteiro/porção): ";
+  const opcaoVendaInput = document.createElement("input");
+  opcaoVendaInput.type = "text";
+  opcaoVendaInput.placeholder = "inteiro/porção";
+  pai.appendChild(opcaoVendaLabel);
+  pai.appendChild(opcaoVendaInput);
 
-    const quantidadePorcao = parseFloat(
-      prompt(`Qual a quantidade da porção em ${unidadePorcao}?`)
-    );
-    if (isNaN(quantidadePorcao)) {
-      alert("Quantidade inválida. Tente novamente.");
-      return;
-    }
+  const botaoConfirmar = document.createElement("button");
+  botaoConfirmar.innerText = "Confirmar";
+  botaoConfirmar.addEventListener("click", function () {
+    const opcaoVenda = opcaoVendaInput.value.toLowerCase();
+    if (opcaoVenda === "inteiro") {
+      const lucroLabel = document.createElement("label");
+      lucroLabel.innerText = "Quantos por cento deseja lucrar?: ";
+      const lucroInput = document.createElement("input");
+      lucroInput.type = "number";
+      lucroInput.placeholder = "Lucro (%)";
+      pai.appendChild(lucroLabel);
+      pai.appendChild(lucroInput);
 
-    let custoPorcao;
-    if (produto.unidade === unidadePorcao) {
-      custoPorcao =
-        (produto.custoTotal / produto.pesoVolume) * quantidadePorcao;
+      const botaoCalcular = document.createElement("button");
+      botaoCalcular.innerText = "Calcular";
+      botaoCalcular.addEventListener("click", function () {
+        const lucro = parseFloat(lucroInput.value);
+        if (isNaN(lucro)) {
+          alert("Valor inválido. Tente novamente.");
+          return;
+        }
+        const precoVenda = produto.custoTotal * (1 + lucro / 100);
+        produto.status = `vendendo por R$ ${precoVenda.toFixed(2)}`;
+        produtos[index] = produto;
+        localStorage.setItem("produtos", JSON.stringify(produtos));
+        consultarProdutos();
+      });
+      pai.appendChild(botaoCalcular);
+    } else if (opcaoVenda === "porção") {
+      const unidadePorcaoLabel = document.createElement("label");
+      unidadePorcaoLabel.innerText = `Qual a unidade da porção? (ex: ${produto.unidade}): `;
+      const unidadePorcaoInput = document.createElement("input");
+      unidadePorcaoInput.type = "text";
+      unidadePorcaoInput.placeholder = "Unidade da porção";
+      pai.appendChild(unidadePorcaoLabel);
+      pai.appendChild(unidadePorcaoInput);
+
+      const quantidadePorcaoLabel = document.createElement("label");
+      quantidadePorcaoLabel.innerText = "Qual a quantidade da porção?: ";
+      const quantidadePorcaoInput = document.createElement("input");
+      quantidadePorcaoInput.type = "number";
+      quantidadePorcaoInput.placeholder = "Quantidade da porção";
+      pai.appendChild(quantidadePorcaoLabel);
+      pai.appendChild(quantidadePorcaoInput);
+
+      const botaoCalcular = document.createElement("button");
+      botaoCalcular.innerText = "Calcular";
+      botaoCalcular.addEventListener("click", function () {
+        const unidadePorcao = unidadePorcaoInput.value.toLowerCase();
+        const quantidadePorcao = parseFloat(quantidadePorcaoInput.value);
+        if (isNaN(quantidadePorcao)) {
+          alert("Quantidade inválida. Tente novamente.");
+          return;
+        }
+
+        let custoPorcao;
+        if (produto.unidade === unidadePorcao) {
+          custoPorcao =
+            (produto.custoTotal / produto.pesoVolume) * quantidadePorcao;
+        } else {
+          if (produto.unidade === "kg" && unidadePorcao === "g") {
+            custoPorcao =
+              (produto.custoTotal / produto.pesoVolume) *
+              (quantidadePorcao / 1000);
+          } else if (produto.unidade === "g" && unidadePorcao === "kg") {
+            custoPorcao =
+              (produto.custoTotal / produto.pesoVolume) *
+              (quantidadePorcao * 1000);
+          } else if (produto.unidade === "l" && unidadePorcao === "ml") {
+            custoPorcao =
+              (produto.custoTotal / produto.pesoVolume) *
+              (quantidadePorcao / 1000);
+          } else if (produto.unidade === "ml" && unidadePorcao === "l") {
+            custoPorcao =
+              (produto.custoTotal / produto.pesoVolume) *
+              (quantidadePorcao * 1000);
+          }
+        }
+
+        const lucroLabel = document.createElement("label");
+        lucroLabel.innerText = "Quantos por cento deseja lucrar?: ";
+        const lucroInput = document.createElement("input");
+        lucroInput.type = "number";
+        lucroInput.placeholder = "Lucro (%)";
+        pai.appendChild(lucroLabel);
+        pai.appendChild(lucroInput);
+
+        const botaoConfirmarLucro = document.createElement("button");
+        botaoConfirmarLucro.innerText = "Confirmar";
+        botaoConfirmarLucro.addEventListener("click", function () {
+          const lucro = parseFloat(lucroInput.value);
+          if (isNaN(lucro)) {
+            alert("Valor inválido. Tente novamente.");
+            return;
+          }
+          const precoVenda = custoPorcao * (1 + lucro / 100);
+          produto.status = `vendendo por R$ ${precoVenda.toFixed(2)} a porção`;
+          produtos[index] = produto;
+          localStorage.setItem("produtos", JSON.stringify(produtos));
+          consultarProdutos();
+        });
+        pai.appendChild(botaoConfirmarLucro);
+      });
+      pai.appendChild(botaoCalcular);
     } else {
-      if (produto.unidade === "kg" && unidadePorcao === "g") {
-        custoPorcao =
-          (produto.custoTotal / produto.pesoVolume) * (quantidadePorcao / 1000);
-      } else if (produto.unidade === "g" && unidadePorcao === "kg") {
-        custoPorcao =
-          (produto.custoTotal / produto.pesoVolume) * (quantidadePorcao * 1000);
-      } else if (produto.unidade === "l" && unidadePorcao === "ml") {
-        custoPorcao =
-          (produto.custoTotal / produto.pesoVolume) * (quantidadePorcao / 1000);
-      } else if (produto.unidade === "ml" && unidadePorcao === "l") {
-        custoPorcao =
-          (produto.custoTotal / produto.pesoVolume) * (quantidadePorcao * 1000);
-      }
-    }
-
-    const lucro = parseFloat(prompt("Quantos por cento deseja lucrar?"));
-    if (isNaN(lucro)) {
-      alert("Valor inválido. Tente novamente.");
+      alert("Opção de venda inválida. Tente novamente.");
       return;
     }
-    const precoVenda = custoPorcao * (1 + lucro / 100);
-    produto.status = `vendendo por R$ ${precoVenda.toFixed(2)} a porção`;
-  } else {
-    alert("Opção de venda inválida. Tente novamente.");
-    return;
-  }
-
-  produtos[index] = produto;
-  localStorage.setItem("produtos", JSON.stringify(produtos));
-  consultarProdutos();
+  });
+  pai.appendChild(botaoConfirmar);
 }
 
 function removerProduto(index) {
