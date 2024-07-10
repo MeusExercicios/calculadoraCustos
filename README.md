@@ -16,8 +16,8 @@ No final, o site informará o custo desse produto.
 
 Na seção consultar produto estará todos os produtos registrados com a opção de submeter à venda. Se o comerciante optar por comercializar seu produto, o site fará uma série de perguntas com o intuito de definir custos específicos juntamente com seu lucro. 
 
-## 🤵🤵Autores 
-João Vitor Costa Rolim & Gabriel Marcelino
+## 🤵Autor
+João Vitor Costa Rolim 
 
 <br/>
 
